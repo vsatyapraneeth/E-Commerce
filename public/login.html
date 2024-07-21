@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm" onsubmit="return validateLogin(event)">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <input type="submit" value="Login"><br>
+            <p> Don't have an account? <a href="signup.html"><b>Sign up</b> here</a></p>
+        </form>
+        <p id="loginError" class="error"></p>
+        <p id="loginSuccess" class="success"></p>
+        <!-- <div>
+            <a href="index.html">
+                <button>Home</button>
+            </a>
+        </div> -->
+    </div>
+
+    <script>
+        async function validateLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('loginError');
+            const loginSuccess = document.getElementById('loginSuccess');
+
+            loginError.textContent = ""; // Clear previous errors
+            loginSuccess.textContent = ""; // Clear previous success
+
+            if (username === password) {
+                loginError.textContent = "Username and password cannot be the same.";
+                return;
+            }
+
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/@/.test(password)) {
+                loginError.textContent = "Password must be at least 8 characters long, contain a capital letter and '@' character.";
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    loginSuccess.textContent = "Login success";
+                    loginError.textContent = "";
+                    // Save token and redirect to about.html
+                    localStorage.setItem('token', data.token); // Save token in localStorage
+                    localStorage.setItem('username', username); // Save username in localStorage
+                    window.location.href = 'display-products.html'; // Redirect to about page
+                } else {
+                    loginError.textContent = data.error;
+                    loginSuccess.textContent = "";
+                }
+            } 
+            catch (error) {
+                loginError.textContent = "An error occurred.";
+                loginSuccess.textContent = "";
+            }
+        }
+    </script>
+</body>
+</html>

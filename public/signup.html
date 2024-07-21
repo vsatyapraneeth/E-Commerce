@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+    <div class="container">
+        <h2>Sign Up</h2>
+        <form id="signupForm" onsubmit="return validateSignUp(event)">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="username" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="password" required>
+            
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="same password" required>
+            
+            <span id="passwordError" class="error"></span>
+            <br>
+            <input type="submit" value="Sign Up">
+        </form>
+        <p id="signupSuccess" class="success"></p>
+        <!-- <div>
+            <a href="index.html">
+                <button>Home</button>
+            </a>
+        </div> -->
+    </div>
+
+    <script>
+        async function validateSignUp(event) {
+            event.preventDefault(); // Prevent form from submitting the traditional way
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const passwordError = document.getElementById('passwordError');
+            const signupSuccess = document.getElementById('signupSuccess');
+
+            passwordError.textContent = ""; // Clear any previous error messages
+            signupSuccess.textContent = ""; // Clear any previous success messages
+
+            if (username === password) {
+                passwordError.textContent = "Username and password cannot be the same.";
+                return;
+            }
+
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/@/.test(password)) {
+                passwordError.textContent = "Password must be at least 8 characters long, contain a capital letter and '@' character.";
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                passwordError.textContent = "Passwords do not match.";
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    signupSuccess.textContent = "Account created successfully";
+                    passwordError.textContent = "";
+                } else {
+                    passwordError.textContent = data.error;
+                    signupSuccess.textContent = "";
+                }
+            } 
+            catch (error) {
+                passwordError.textContent = "An error occurred.";
+                signupSuccess.textContent = "";
+            }
+        }
+    </script>
+</body>
+</html>
